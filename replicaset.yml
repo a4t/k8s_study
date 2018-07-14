@@ -1,0 +1,76 @@
+apiVersion: extensions/v1beta1
+kind: ReplicaSet
+metadata:
+  name: k8s-study
+  namespace: k8s-study-space
+  labels:
+    app: "k8s-study"
+    env: "test"
+    version: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "k8s-study"
+      role: "app"
+      env: "test"
+      version: "1"
+  template:
+    metadata:
+      labels:
+        app: "k8s-study"
+        role: "app"
+        env: "test"
+        version: "1"
+    spec:
+      volumes:
+        - name: test-secret
+          secret:
+            secretName: test-secret
+        - name: test-config-map
+          configMap:
+            name: test-config-map
+      containers:
+      - name: nginx-test
+        image: iwanomoto/nginx_test
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: test-secret
+                key: mysql.password
+          - name: RAILS_ENV
+            valueFrom:
+              configMapKeyRef:
+                name: test-config-map
+                key: RAILS_ENV
+        volumeMounts:
+          - name: test-secret
+            mountPath: /secret
+            readOnly: true
+          - name: test-config-map
+            mountPath: /config-map
+            readOnly: true
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /version.html?check=livenessProbe
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /version.html?check=readinessProbe
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 3
+        ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP

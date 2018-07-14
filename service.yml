@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-test
+spec:
+  type: LoadBalancer
+  selector:
+    app: "k8s-study"
+    role: "app"
+    env: "test"
+    version: "1"
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 80

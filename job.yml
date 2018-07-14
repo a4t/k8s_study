@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: k8s-study-space
+  name: nginx-batch
+  labels:
+    app: batch
+    env: "test"
+    version: "1"
+spec:
+  parallelism: 5
+  completions: 50
+  template:
+    spec:
+      containers:
+      - name: nginx-batch
+        image: iwanomoto/nginx_test
+        command: ["date"]
+      restartPolicy: OnFailure
+  backoffLimit: 4
